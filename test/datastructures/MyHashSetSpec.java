@@ -80,15 +80,16 @@ public class MyHashSetSpec {
 	
 	@Test
 	public void whenAddThatJustRequiresResize_ThenAllAddedAndCapAndThresholdChanged() {
-		MyHashSet<Integer> hashSet= new MyHashSet<>(3);
+		MyHashSet<Integer> hashSet= new MyHashSet<>(4);
 		
 		assertTrue(hashSet.add(-111));
 		assertTrue(hashSet.add(222));
 		assertTrue(hashSet.add(-333));
+		assertTrue(hashSet.add(444));
 		
-		assertSet(hashSet, -111, 222, -333);
-		assertEquals(4, hashSet.getThreshold());
-		assertEquals(5, hashSet.getCapacity());
+		assertSet(hashSet, -111, 222, -333, 444);
+		assertEquals(6, hashSet.getThreshold());
+		assertEquals(8, hashSet.getCapacity());
 	}
 
 	/**

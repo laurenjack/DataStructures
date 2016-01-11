@@ -11,7 +11,6 @@ public class MyHashSet<T> implements Set<T> {
 	private static final int RESIZE_FACTOR = 2;
 
 	private final float loadFactor;
-	private int capacity;
 	private LinkedNode[] data;
 	private int threshold;
 	private int size;
@@ -28,13 +27,16 @@ public class MyHashSet<T> implements Set<T> {
 	public MyHashSet(int initialCapacity, float loadFactor) {
 		if (initialCapacity < 0) {
 			throw new IllegalArgumentException("initialCapacity: "
-		        + initialCapacity + " must be non-negative");
+					+ initialCapacity + " must be non-negative");
 		}
 		if (loadFactor <= 0 || Float.isNaN(loadFactor)) {
-			throw new IllegalArgumentException("loadFactor: " 
-		        + loadFactor + " must be a positive number");
+			throw new IllegalArgumentException("loadFactor: " + loadFactor
+					+ " must be a positive number");
 		}
-		this.capacity = initialCapacity;
+		int capacity = 1;
+		while (capacity < initialCapacity) {
+			capacity <<= 1;
+		}
 		this.loadFactor = loadFactor;
 		this.threshold = (int) (capacity * loadFactor);
 		this.data = new MyHashSet.LinkedNode[capacity];
@@ -43,7 +45,7 @@ public class MyHashSet<T> implements Set<T> {
 
 	@Override
 	public boolean add(T e) {
-		int i = indexOf(e);
+		int i = indexOf(e, data.length);
 		final LinkedNode first = data[i];
 		final LinkedNode newNode = new LinkedNode(e);
 		for (LinkedNode node = first; node != null; node = node.next) {
@@ -52,12 +54,12 @@ public class MyHashSet<T> implements Set<T> {
 				return false;
 			}
 		}
-		if (size >= threshold) {
-			resize(threshold);
+		if (size++ >= threshold) {
+			resize(RESIZE_FACTOR * data.length);
 		}
-		data[i] = newNode;
-		newNode.next = first;
-		++size;
+		i= indexOf(e, data.length);
+		newNode.next = data[i];
+        data[i]= newNode;
 		return true;
 	}
 
@@ -73,9 +75,9 @@ public class MyHashSet<T> implements Set<T> {
 	}
 
 	/* Find the index in the backing array for e, based on its hash */
-	private int indexOf(Object e) {
+	private int indexOf(Object e, int length) {
 		int hash = e.hashCode();
-		return (hash & data.length - 1);
+		return (hash & length - 1);
 	}
 
 	@Override
@@ -98,7 +100,7 @@ public class MyHashSet<T> implements Set<T> {
 	@Override
 	public boolean contains(Object e) {
 		final int hash = e.hashCode();
-		int index = indexOf(hash);
+		int index = indexOf(hash, data.length);
 		if (data[index] == null) {
 			return false;
 		}
@@ -171,23 +173,36 @@ public class MyHashSet<T> implements Set<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void resize(int totalThreshold) {
-		threshold= RESIZE_FACTOR * totalThreshold;
-		capacity = (int) (threshold / loadFactor);
+	private void resize(int newCapacity) {
+		threshold = (int) (newCapacity * loadFactor);
 		LinkedNode[] temp = this.data;
-		this.data = new MyHashSet.LinkedNode[capacity];
+		this.data = new MyHashSet.LinkedNode[newCapacity];
+		// transfer to new indicies in the larger backing array
 		for (int i = 0; i < temp.length; ++i) {
-			if(temp[i]!=null) {
-				
-			}
-			this.data[i] = temp[i];
+			transferSingleNode(i, temp);
 		}
 	}
-	
-	int getCapacity() {
-		return capacity;
+
+	/* Transfers a single node temp[i] into the backing array */
+	private void transferSingleNode(int i, LinkedNode[] temp) {
+		LinkedNode n = temp[i];
+		if (n != null) {
+			temp[i] = null;
+			
+			while(n!= null) {
+				LinkedNode next= n.next;
+				int newIndex = indexOf(n, data.length);
+				n.next = data[newIndex];
+				data[newIndex] = n;
+				n= next;
+			}
+		}
 	}
-	
+
+	int getCapacity() {
+		return this.data.length;
+	}
+
 	int getThreshold() {
 		return threshold;
 	}
