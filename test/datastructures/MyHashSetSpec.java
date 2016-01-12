@@ -3,6 +3,7 @@ package datastructures;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -90,6 +91,37 @@ public class MyHashSetSpec {
 		assertSet(hashSet, -111, 222, -333, 444);
 		assertEquals(6, hashSet.getThreshold());
 		assertEquals(8, hashSet.getCapacity());
+	}
+	
+	@Test
+	public void whenAddThatEdgeOfNotNeedingResize_ThenAllAddedButNoCapAndThresholdChanged() {
+		MyHashSet<Integer> hashSet= new MyHashSet<>(4);
+		
+		assertTrue(hashSet.add(-111));
+		assertTrue(hashSet.add(222));
+		assertFalse(hashSet.add(222));
+		assertTrue(hashSet.add(-333));
+		assertFalse(hashSet.add(-111));
+		
+		assertSet(hashSet, -111, 222, -333);
+		assertEquals(3, hashSet.getThreshold());
+		assertEquals(4, hashSet.getCapacity());
+	}
+	
+	@Test
+	public void whenHashIterator_ThenElementsReturnedInSetAndHasNextTrueWhenElementsLeft() {
+		MyHashSet<Integer> hashSet= new MyHashSet<>();
+		assertTrue(hashSet.add(1234));
+		assertTrue(hashSet.add(-5678));
+		assertTrue(hashSet.add(910));
+		
+		Iterator<Integer> itr= hashSet.iterator();
+		for(int i=0; i<3; ++i) {
+			assertTrue(itr.hasNext());
+			assertTrue(hashSet.contains(itr.next()));
+		}
+		assertFalse(itr.hasNext());
+		
 	}
 
 	/**

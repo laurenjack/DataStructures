@@ -2,6 +2,7 @@ package datastructures;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 public class MyHashSet<T> implements Set<T> {
@@ -57,9 +58,9 @@ public class MyHashSet<T> implements Set<T> {
 		if (size++ >= threshold) {
 			resize(RESIZE_FACTOR * data.length);
 		}
-		i= indexOf(e, data.length);
+		i = indexOf(e, data.length);
 		newNode.next = data[i];
-        data[i]= newNode;
+		data[i] = newNode;
 		return true;
 	}
 
@@ -129,8 +130,57 @@ public class MyHashSet<T> implements Set<T> {
 
 	@Override
 	public Iterator<T> iterator() {
-		// TODO Auto-generated method stub
-		return null;
+		return new Iterator<T>() {
+
+			private int currentIndex = 0;
+			private LinkedNode currentNode = data[currentIndex];
+
+			@Override
+			public boolean hasNext() {
+				LinkedNode nextNode= nextNode();
+				if(nextNode==null) {
+					return false;
+				}
+				return true;
+			}
+
+			@Override
+			public T next() {
+				LinkedNode nextNode= nextNode();
+				if(nextNode==null) {
+					throw new NoSuchElementException("No more elements to iterate over");
+				}
+				curren= nextNode();
+				return next.e;
+			}
+
+			/**
+			 * Will return the next node or null if there are no more nodes.
+			 */
+			private LinkedNode nextNode() {
+				if(currentNode!=null && currentNode.next!=null) {
+					return currentNode.next;
+				}
+				LinkedNode next= null;
+				for (int nextIndex= currentIndex; next== null; next= data[nextIndex]) {
+					++nextIndex;
+					if (nextIndex >= data.length) {
+						return null;
+					}
+				}
+				return next;
+				LinkedNode next = currentNode;
+				currentNode = currentNode.next;
+				return next;
+			}
+
+			@Override
+			public void remove() {
+				// TODO Auto-generated method stub
+
+			}
+
+		};
 	}
 
 	@Override
@@ -188,13 +238,13 @@ public class MyHashSet<T> implements Set<T> {
 		LinkedNode n = temp[i];
 		if (n != null) {
 			temp[i] = null;
-			
-			while(n!= null) {
-				LinkedNode next= n.next;
-				int newIndex = indexOf(n, data.length);
+
+			while (n != null) {
+				LinkedNode next = n.next;
+				int newIndex = indexOf(n.e, data.length);
 				n.next = data[newIndex];
 				data[newIndex] = n;
-				n= next;
+				n = next;
 			}
 		}
 	}
