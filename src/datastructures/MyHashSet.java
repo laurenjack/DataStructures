@@ -132,45 +132,52 @@ public class MyHashSet<T> implements Set<T> {
 	public Iterator<T> iterator() {
 		return new Iterator<T>() {
 
-			private int currentIndex = 0;
-			private LinkedNode currentNode = data[currentIndex];
+			// index in backing array
+			private int nextIndex = 0;
+			// the nextNode, null represents no more nodes remaining
+			private LinkedNode nextNode = data[nextIndex] == null ? findNextStart()
+					: data[nextIndex];
 
 			@Override
 			public boolean hasNext() {
-				LinkedNode nextNode= nextNode();
-				if(nextNode==null) {
-					return false;
-				}
-				return true;
+				return nextNode != null;
 			}
 
 			@Override
 			public T next() {
-				LinkedNode nextNode= nextNode();
-				if(nextNode==null) {
-					throw new NoSuchElementException("No more elements to iterate over");
+				if (nextNode == null) {
+					throw new NoSuchElementException(
+							"No more elements to iterate over");
 				}
-				curren= nextNode();
-				return next.e;
+				T next = nextNode.e;
+				incrementNext();
+				return next;
 			}
 
 			/**
 			 * Will return the next node or null if there are no more nodes.
 			 */
-			private LinkedNode nextNode() {
-				if(currentNode!=null && currentNode.next!=null) {
-					return currentNode.next;
+			private void incrementNext() {
+				// if the current list still has nodes, move on to the next one
+				if (nextNode.next != null) {
+					nextNode = nextNode.next;
 				}
-				LinkedNode next= null;
-				for (int nextIndex= currentIndex; next== null; next= data[nextIndex]) {
-					++nextIndex;
-					if (nextIndex >= data.length) {
-						return null;
-					}
+				// otherwise find the next linked list in the backing array
+				// (null if there are no more)
+				else {
+					nextNode = findNextStart();
 				}
-				return next;
-				LinkedNode next = currentNode;
-				currentNode = currentNode.next;
+			}
+
+			/*
+			 * Find the next starting node of a LinkedList in the backing array,
+			 * returns null if there are no more linked lists left
+			 */
+			private LinkedNode findNextStart() {
+				++nextIndex;
+				LinkedNode next = null;
+				for (; nextIndex < data.length
+						&& (next = data[nextIndex]) == null; ++nextIndex);
 				return next;
 			}
 

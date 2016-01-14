@@ -52,8 +52,8 @@ public class MyHashSetSpec {
 	public void whenAddTwoUnequalItemsWithSameHashCode_ThenBothAdded() {
 		MyHashSet<Object> hashSet = new MyHashSet<>();
 
-		Object sameHash1 = mockFixedHashCode();
-		Object sameHash2 = mockFixedHashCode();
+		Object sameHash1 = mockHashCode(FIXED_HASH);
+		Object sameHash2 = mockHashCode(FIXED_HASH);
 
 		Object differentHash = new Object();
 
@@ -69,7 +69,7 @@ public class MyHashSetSpec {
 		MyHashSet<Object> hashSet = new MyHashSet<>();
 		Object[] sameHashes= new Object[10];
 		for(int i=0; i<sameHashes.length; ++i) {
-			sameHashes[i]= mockFixedHashCode();
+			sameHashes[i]= mockHashCode(FIXED_HASH);
 		}
 		
 		for(Object sameHash : sameHashes) {
@@ -123,12 +123,44 @@ public class MyHashSetSpec {
 		assertFalse(itr.hasNext());
 		
 	}
+	
+	@Test
+	public void whenIterateWithDeliberateNodesAtStartAndEndOFBackingArray() {
+		MyHashSet<Integer> hashSet= new MyHashSet<>(4);
+		assertTrue(hashSet.add(3));
+		assertTrue(hashSet.add(0));
+		
+		Iterator<Integer> itr= hashSet.iterator();
+		for(int i=0; i<2; ++i) {
+			assertTrue(itr.hasNext());
+			assertTrue(hashSet.contains(itr.next()));
+		}
+		assertFalse(itr.hasNext());
+	}
+	
+	@Test
+	public void whenIterateWithDeliberateListAndAtStartAndEndOFBackingArray() {
+		MyHashSet<Object> hashSet= new MyHashSet<>(8);
+		assertTrue(hashSet.add(7));
+		assertTrue(hashSet.add(mockHashCode(7)));
+		assertTrue(hashSet.add(0));
+		assertTrue(hashSet.add(mockHashCode(0)));
+		
+		Iterator<Object> itr= hashSet.iterator();
+		for(int i=0; i<4; ++i) {
+			assertTrue(itr.hasNext());
+			assertTrue(hashSet.contains(itr.next()));
+		}
+		assertFalse(itr.hasNext());
+	}
 
 	/**
 	 * Produce an anynomous subclass of object that overrides hashcode, so that
-	 * it returns {@link MyHashSetSpec#FIXED_HASH}
+	 * it returns the provided hashCode
+	 * 
+	 * @param hachCode - the hashCode for the mock to return
 	 */
-	private Object mockFixedHashCode() {
+	private Object mockHashCode(int hashCode) {
         return new Object() {
 			@Override
 			public int hashCode() {
